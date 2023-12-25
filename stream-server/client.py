@@ -23,8 +23,10 @@ headers = {
     "Content-Type": "application/json"
 }
 
+def sample():
+
 @app.route('/flask_test/<string:task_id>', methods=['POST'])
-def receive_request6(task_id):
+def build_result(task_id):
     global Type,idx
     json_data = request.json
     results={}
