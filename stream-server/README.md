@@ -7,6 +7,8 @@
 本框架包含一个主要后端server，以flask框架搭建，由server进行接受前端json，并做任务下发和任务管理，每个任务对应一个stream算法进程和一个业务层逻辑进程，业务层也是由flask框架搭建。
 ## 准备sophon-stream算法
 参考(../sophon-stream/README.md)根据算法需求准备好模型与数据，并完成stream编译，生成main函数接口，此接口为sophon-stream进程主要逻辑的入口，根据命名格式完成config命名，注意入口参数config一般以算法名称+'_demo'命名，算法名称为samples下文件目录名称。
+算法定义了TYPE映射保存在server中，目前仅适配了license_plate_recognition
+map_type={16:'license_plate_recognition'}
 
 ## server使用方式
 由server进行接受前端json，并做任务下发和任务管理，包含线程池和端口管理。
