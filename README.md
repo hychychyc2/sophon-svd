@@ -9,7 +9,7 @@ SophonSDK是算能科技基于其自主研发的深度学习处理器所定制�
 ## 目录结构与说明
 
 其中包含三个模块
-sophon-stream算法模块详见stream[sophon-stream](./sophon-stream/README.md)
+sophon-stream算法模块，是sophon-sdk中多线程得高性能框架完成得算法模块，可以在sdk release 包中下载,详见stream[sophon-stream](./sophon-stream/README.md)
 stream-server服务模块详见[stream-server](./stream-server/README.md)
 stream-client测试模块详见[stream-client](./stream-client/README.md)
 ## 版本说明
