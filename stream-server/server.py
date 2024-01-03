@@ -8,7 +8,11 @@ import json
 import subprocess
 import os
 import signal
-from config2 import *
+from config_algorithm import *
+import os
+import glob
+import shutil
+
 print(__name__)
 app = Flask(__name__)
 stream_path="/home/hyc/data/sophon-stream"
@@ -16,58 +20,15 @@ current_directory = os.getcwd()
 process_pools={}
 infos={}
 Types={}
-# in_thresh=3
-# out_thresh=5
-# port=10001
-# map_type={16:'license_plate_recognition'}
+port=10001
+
+algorithms=Algorithms()
 def build_config(data):
     global port
     print(data)
     algorithm_name=map_type[data['Algorithm'][0]["Type"]]
-    config_path=stream_path+'/samples/'+algorithm_name+'/config/'
-    # stream_run_path=stream_path+"/samples/build"
-
-    # cmd="cp -rf "+config_path+' '+stream_run_path
-    # result = subprocess.run(cmd, shell=True)
-    # print("Return Code:", result.returncode)
-    demo_config_path=config_path+algorithm_name+'_demo.json'
-    http_config_path=config_path+'http_push.json'
-    det_config_path=config_path+'yolov5_group.json'
-    with open(demo_config_path, 'r') as file:
-    # 使用 json.load 将文件内容转换为字典
-        json_data = json.load(file)
-    # print(data["InputSrc"]["StreamSrc"]["Address"])
-    json_data["channels"]=[json_data["channels"][0]]
-    json_data["channels"][0]["url"]=data["InputSrc"]["StreamSrc"]["Address"]
-    json_data["channels"][0]["sample_interval"]=data["Algorithm"][0]["DetectInterval"]
-    json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
-    with open(demo_config_path, 'w') as file:
-        json.dump(json_data, file, indent=2)
-    with open(http_config_path, 'r') as file:
-    # 使用 json.load 将文件内容转换为字典
-        json_data = json.load(file)
-    # print(data["InputSrc"]["StreamSrc"]["Address"])
-    json_data["configure"]["route"]="/flask_test/"+data['TaskID']
-    json_data["configure"]["port"]=port
-
-    with open(http_config_path, 'w') as file:
-        json.dump(json_data, file, indent=2)
-    with open(det_config_path, 'r') as file:
-    # 使用 json.load 将文件内容转换为字典
-        json_data = json.load(file)
-    if(data["Algorithm"][0]["DetectInfos"]!=None):
-        sx=min([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        sy=min([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        tx=max([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        ty=max([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        json_data["configure"]["roi"]={"left":sx,"top":sy,"width":tx-sx,"height":ty-sy}
-        with open(det_config_path, 'w') as file:
-            json.dump(json_data, file, indent=2)
-    else:
-        if("roi"in json_data["configure"].keys()):
-            del json_data["configure"]["roi"]
-        with open(det_config_path, 'w') as file:
-            json.dump(json_data, file, indent=2)
+    algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
+    demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
     return demo_config_path,data['TaskID'],data['Algorithm'][0]["Type"]
 
 def build_client(task_id,Type,result_url):
@@ -84,101 +45,7 @@ def build_client(task_id,Type,result_url):
     with open(log_path, "w") as log_file:
         process = subprocess.Popen(cmd, shell=False, stdout=log_file, stderr=subprocess.STDOUT)
     return process
-def build_client_2(task_id,Type):
-    # import pdb; pdb.set_trace()
-    client_app = Flask(__name__)
-    @client_app.route('/flask_test/<string:task_id>', methods=['POST'])
-    def receive_request6(task_id):
-        json_data = request.json
-        results={}
-        frame_id=str(json_data["mFrame"]["mFrameId"])
-        results["FrameIndex"]=frame_id
-        # print(json_data.keys())
-        if("mSubObjectMetadatas" in json_data.keys()):
-            # print(json_data["mSubObjectMetadatas"][0]["mRecognizedObjectMetadatas"][0]["mLabelName"])
-            names=[str(i["mRecognizedObjectMetadatas"][0]["mLabelName"]) for i in json_data["mSubObjectMetadatas"]]
-        else:
-            names=[]
-        src_base64=json_data["mFrame"]["mSpData"]
-        results["SceneImageBase64"]=src_base64
-        results["AnalyzeEvents"]=[]
-        results["TaskID"]=task_id
-        # save_base64_image(src_base64,'gg3.jpg')
-        base64s=[]
-        up_list=[]
-        for name in names:
-            # print(name)
-            # print(infos.keys())
-            print(infos)
-            if name in infos[task_id].keys():
-                infos[task_id][name]["in"]+=1
-                # print(infos[name]["in"])
-                if infos[task_id][name]["in"]==in_thresh:
-                    up_list.append(name)      
-            else :
-                infos[task_id][name]={}
-                infos[task_id][name]["in"]=1
-                if infos[task_id][name]["in"]==in_thresh:
-                    up_list.append(name)
-        # print(names)
-        
-        boxes=[]
-        if("mSubObjectMetadatas" in json_data.keys()):
-            for indx in range(len(json_data["mDetectedObjectMetadatas"])):
-                tmp=json_data["mDetectedObjectMetadatas"][indx]
-                tmp2=json_data["mSubObjectMetadatas"][indx]
-                if tmp2["mRecognizedObjectMetadatas"][0]["mLabelName"] in up_list:
-                    result={}
-                    x1,y1=tmp["mBox"]["mX"],tmp["mBox"]["mY"]
-                    x2=x1+tmp["mBox"]["mWidth"]
-                    y2=y1+tmp["mBox"]["mHeight"]
-                    boxes.append((x1,y1,x2,y2))
-                    # print(tmp2["mFrame"]["mSpData"])
-                    # save_base64_image(tmp2["mFrame"]["mSpData"],'gg.jpg')
-                    # result["ImageBase64"]=crop_image_base64(src_base64, (x1,y1,x2,y2))
-                    result["ImageBase64"]=tmp2["mFrame"]["mSpData"]
-                    # print(result["ImageBase64"])
-                    # save_base64_image(result["ImageBase64"],'gg2.jpg')
 
-                    result["Box"]={"LeftTopY": y1,
-                                    "RightBtmY": y2,
-                                    "LeftTopX": x1,
-                                    "RightBtmX": x2 }
-                    result["Type"]=Types[task_id]
-                    result["Extend"]={}
-                    result["Extend"]["VehicleLicense"]=tmp2["mRecognizedObjectMetadatas"][0]["mLabelName"]
-                    results["AnalyzeEvents"].append(result)
-        rm_list=[]
-        print(infos)
-        for key in infos[task_id].keys():
-            if key not in names:
-                if "out" in infos[task_id][key].keys():
-                    infos[task_id][key]["out"]+=1
-                    if infos[task_id][key]["out"]>=out_thresh:
-                        rm_list.append(key)          
-                else:
-                    infos[task_id][key]["out"]=1
-        
-        for key in rm_list:
-            del infos[task_id][key]
-        print(infos)
-        print(up_list)
-
-        if(len(up_list)):
-            # response = requests.post(url, json=results, headers=headers)
-            # print(response)
-            with open("results/"+frame_id+".json", 'w') as file:
-                json.dump(results, file, indent=2)
-        # print(json_data)
-        return jsonify({"message": "Request received and processed successfully", "response": 1})
-
-        
-    client_app.run(debug=True, host='0.0.0.0', port=8000)
-        # print(1)
-        # cmd=["python","client.py","--task_id="+str(task_id),"--type="+str(Type)]
-        # print(cmd)
-        # process = subprocess.Popen(cmd)
-        # return process
 def build_task(demo_config_path,task_id,Type,result_url):
     if(task_status(task_id)["Status"]==1):
         return "Task is already running."
@@ -279,6 +146,30 @@ def argsparser():
 if __name__ == '__main__':
     args = argsparser()
     stream_path=args.stream_path
+    # 获取当前目录下所有的.log文件
+    log_files = glob.glob('*.log')
+    # 遍历文件列表，逐个删除
+    for log_file in log_files:
+        try:
+            os.remove(log_file)
+            print(f"Deleted: {log_file}")
+        except OSError as e:
+            print(f"Error: {log_file} : {e.strerror}")
+            
+    log_files = glob.glob(stream_path+'/samples/build/*.log')
+    # 遍历文件列表，逐个删除
+    for log_file in log_files:
+        try:
+            os.remove(log_file)
+            print(f"Deleted: {log_file}")
+        except OSError as e:
+            print(f"Error: {log_file} : {e.strerror}")
+    if os.path.isdir('results'):
+        try:
+            shutil.rmtree('results')
+            print(f"The directory results has been removed successfully")
+        except Exception as e:
+            print(f"Error: {e}")
     app.run(debug=False, host='0.0.0.0', port=8001)
 
 

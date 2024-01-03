@@ -81,11 +81,60 @@ stream算法进程，完成算法,并将逐帧结果通过post请求推送到业
 
 本例程中只对连续出现n帧并且没有连续消失m帧的进行告警。可以根据需求在修改。
 
-## 面向开发者
-一般完成一个简单业务需要修改框架中server.py的build_config接口，以及client.py中的receive_request6接口，主要涉及到config的转换。
+## 快速入门
+
+一般完成一个简单算法业务需要根据框架中的模板添加samples子目录，以算法名称命名，并将算法映射到config_algorithm.py中。
+
+以车牌识别为例，添加如下映射及转换函数,函数亦应以算法名称命名
+```
+from samples.license_plate_recognition.license_plate_recognition import *
+from samples.license_plate_recognition.config_logic import *
+
+map_type={16:'license_plate_recognition'}
+
+
+class Algorithms:
+    def license_plate_recognition_build_config(self,algorithm_name,stream_path,data,port):
+        return license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
+    def license_plate_recognition_trans_json(self,json_data,task_id,Type,up_list):
+        return  license_plate_recognition_trans_json(json_data,task_id,Type,up_list)
+    def license_plate_recognition_logic(self,json_data,up_list,rm_list):
+        return license_plate_recognition_logic(json_data,up_list,rm_list)
+```
+
+在samples算法目录下填充对应算法的build_config,trans_json,logic函数
+
+
+### config_logic
+主要配置业务逻辑需要的参数设置。
+
+以车牌识别为例，设置数据结构infos记录车牌连续出现次数和连续消失次数，并设置阙值以完成业务逻辑。
+
+如下
+
+```
+license_plate_recognition_infos={}
+license_plate_recognition_in_thresh=3
+license_plate_recognition_out_thresh=5
+```
+### logic
+主要实现业务逻辑层功能。
+
+以车牌识别为例，只对连续出现n帧并且没有连续消失m帧的进行告警。
 
 ### build_config
 主要是sophon-net的任务下发json与stream的json文件的转换。
+
+```
+def algorithm_build_config(algorithm_name,stream_path,data,port):
+ '''
+    return :  demo_config_path
+    '''
+```
+
+参数包括算法名称，stream路径，数据，业务逻辑进程端口号
+
+为了完成config转换功能，我们需要知道sophon-stream和sophon-net的config的对应关系
 
 一个sophon-net的任务下发json如下
 ```
@@ -278,9 +327,19 @@ data = {
 
 2.其他算法特定参数可能在sophon-net的extend模块中提供，具体参考[sophon-stream](../sophon-stream/README.md)
 
-### build_result
+### trans_json
 主要是sophon-stream的结果json与sophon-net的汇报json文件的转换。
 
+```
+def algorithm_trans_json(json_data,task_id,Type,up_list):
+ '''
+    return :  results
+    '''
+```
+
+参数包括数据，任务id，任务类型，上报列表
+
+为了完成结果json转换功能，我们需要知道sophon-stream和sophon-net的json的对应关系
 
 sophon-stream的结果json如下
 
@@ -385,4 +444,3 @@ sophon-net的结果上报json格式
 |mDetectedObjectMetadatas-mBox|Box|检测框，注意需要做坐标转换，stream->net为xywh->xyxy|
 |自行规定|Extend|额外信息，如"VehicleLicense"需要算法自行规定|
 
-函数接口里面还涉及到筛选业务逻辑，修改in_thresh,out_thresh参数以调整
