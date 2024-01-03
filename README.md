@@ -9,8 +9,11 @@ SophonSDK是算能科技基于其自主研发的深度学习处理器所定制�
 ## 目录结构与说明
 
 其中包含三个模块
+
 sophon-stream算法模块，是sophon-sdk中多线程得高性能框架完成得算法模块，可以在sdk release 包中下载,详见stream[sophon-stream](./sophon-stream/README.md)
+
 stream-server服务模块详见[stream-server](./stream-server/README.md)
+
 stream-client测试模块详见[stream-client](./stream-client/README.md)
 ## 版本说明
 | 版本    | 说明 | 
@@ -42,10 +45,10 @@ Sophon Demo主要依赖tpu-mlir、tpu-nntc、libsophon、sophon-ffmpeg、sophon-
 根据[stream-client](./stream-client/README.md)测试
 
 性能测试结果如下
-| 设备类型 | cpu核 |	yolov5模型信息(batch,time,type)	| lprnet模型信息(batch,time,type) |	芯片 |	TPU利用率 |	cpu利用率 |	device 内存(M) | sys 内存(G) |	抽帧数 | 分析路数 |
+| 设备类型 | cpu核 |	yolov5模型信息(batch,time,type,post)	| lprnet模型信息(batch,time,type,post) |	芯片 |	TPU利用率 |	cpu利用率 |	device 内存(M) | sys 内存(G) |	抽帧数 | 分析路数 |
 |--------|------------| --------|---------|--------- |----------   | ------    | --------  |----------   | ------    | --------  |
-|se5-16	|8	| 4b,0.021794,int8	|1b,0.000768,int8	|bm1684|	93%|	88.00%|	2227.91|	2.15|	5|	18|
-|se7|	8%	| 4b,0.007178,int8|	1b,0.000467,int8|	bm1684x|	40%	|92%	|1671|	1.2|	5	|19|
+|se5-16	|8	| 4b,0.021794,int8,cpu	|1b,0.000768,int8,cpu	|bm1684|	93%|	88.00%|	2227.91|	2.15|	5|	18|
+|se7|	8%	| 4b,0.007178,int8,cpu|	1b,0.000467,int8,cpu|	bm1684x|	40%	|92%	|1671|	1.2|	5	|19|
 
 ## 技术资料
 
