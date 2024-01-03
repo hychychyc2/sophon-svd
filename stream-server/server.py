@@ -8,6 +8,7 @@ import json
 import subprocess
 import os
 import signal
+from config2 import *
 print(__name__)
 app = Flask(__name__)
 stream_path="/home/hyc/data/sophon-stream"
@@ -17,8 +18,8 @@ infos={}
 Types={}
 # in_thresh=3
 # out_thresh=5
-port=10001
-map_type={16:'license_plate_recognition'}
+# port=10001
+# map_type={16:'license_plate_recognition'}
 def build_config(data):
     global port
     print(data)
