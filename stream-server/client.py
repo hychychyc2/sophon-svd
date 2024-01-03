@@ -45,14 +45,14 @@ def build_result(task_id):
     print(up_list)
 
     if(len(up_list)):
-        response = requests.post(result_list[idx%url_len], json=[results], headers=headers)
+        # response = requests.post(result_list[idx%url_len], json=[results], headers=headers)
         idx+=1
         idx%=url_len
         # print(response)
-        # if not os.path.exists("results/"):
-        #     os.makedirs("results/")
-        # with open("results/"+str(task_id)+'_'+str(frame_id)+".json", 'w') as file:
-        #     json.dump([results], file, indent=2)
+        if not os.path.exists("results/"):
+            os.makedirs("results/")
+        with open("results/"+str(task_id)+'_'+str(frame_id)+".json", 'w') as file:
+            json.dump([results], file, indent=2)
     # print(json_data)
     return jsonify({"message": "Request received and processed successfully", "response": 1})
 

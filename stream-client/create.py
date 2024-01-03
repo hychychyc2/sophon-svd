@@ -3,6 +3,7 @@ import json
 import sys
 # 定义请求的 URL
 task_id=sys.argv[1]
+Type=sys.argv[2]
 print(task_id)
 url = "http://0.0.0.0:8001/task/create"
 
@@ -22,7 +23,7 @@ data = {
     },
     "Algorithm": [
         {
-            "Type": 16,
+            "Type": int(Type),
             "TrackInterval": 1,
             "DetectInterval": 5,
             "TargetSize": {

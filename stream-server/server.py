@@ -26,6 +26,10 @@ algorithms=Algorithms()
 def build_config(data):
     global port
     print(data)
+    print(map_type)
+    print(data['Algorithm'][0]["Type"])
+    if(data['Algorithm'][0]["Type"] in map_type.keys()):
+        print(1)
     algorithm_name=map_type[data['Algorithm'][0]["Type"]]
     algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
     demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
