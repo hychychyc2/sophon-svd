@@ -8,7 +8,7 @@ exitt(){
     exit 1
 }
 while true;do
-    python3 post2.py $id 
+    python3 create.py $id 16
     sleep 30
     # top -b -n 30  > cpu.log
     # cpu=$(bash caculate.sh)
@@ -17,7 +17,7 @@ while true;do
         # 检查文件是否包含目标字符串
         if grep -q "$target_string" "$file_path"; then
             echo $id
-            python3 ctrol.py $id 
+            python3 delete.py $id 
             sleep 30000000000
             echo "File '$file_path' contains the target string."
             top -b -n 30  > cpu.log

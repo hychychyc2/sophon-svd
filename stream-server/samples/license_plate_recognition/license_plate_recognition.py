@@ -19,6 +19,8 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
     json_data["channels"][0]["url"]=data["InputSrc"]["StreamSrc"]["Address"]
     json_data["channels"][0]["sample_interval"]=data["Algorithm"][0]["DetectInterval"]
     json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
+    json_data["channels"][0]["fps"]=25
+
     with open(demo_config_path, 'w') as file:
         json.dump(json_data, file, indent=2)
     with open(http_config_path, 'r') as file:

@@ -25,16 +25,13 @@ port=10001
 algorithms=Algorithms()
 def build_config(data):
     global port
-    print(data)
-    print(map_type)
-    print(data['Algorithm'][0]["Type"])
-    if(data['Algorithm'][0]["Type"] in map_type.keys()):
-        print(1)
-    algorithm_name=map_type[data['Algorithm'][0]["Type"]]
-    algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
-    demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
-    return demo_config_path,data['TaskID'],data['Algorithm'][0]["Type"]
-
+    try:
+        algorithm_name=map_type[data['Algorithm'][0]["Type"]]
+        algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
+        demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
+        return demo_config_path,data['TaskID'],data['Algorithm'][0]["Type"]
+    except:
+        return "no type",data['TaskID'],data['Algorithm'][0]["Type"]
 def build_client(task_id,Type,result_url):
     global port
     # import pdb; pdb.set_trace()
@@ -58,10 +55,7 @@ def build_task(demo_config_path,task_id,Type,result_url):
     time.sleep(3)
     stream_run_path=stream_path+"/samples/build"
     client_process = build_client(task_id,Type,result_url)   
-    # client_process = Process(target=build_client_2,args=(task_id,Type))
-    # client_process.start()       
-    # client_process.join() 
-    # client_process=Flask(__name__)
+
     os.chdir(stream_run_path)
     cmd=[stream_run_path+"/main","--demo_config_path="+demo_config_path]
     print(cmd)
@@ -69,17 +63,13 @@ def build_task(demo_config_path,task_id,Type,result_url):
     with open(log_path, "w") as log_file:
         stream_process = subprocess.Popen(cmd, shell=False, stdout=log_file, stderr=subprocess.STDOUT)    
     os.chdir(current_directory)
-    # print("Return Code:", process.returncode)
-    # print("Worker process completed")
+
     
     process_pools[task_id]=(stream_process,client_process)
-    # with open('v.txt','w') as f:
-    #     f.write(str(len(process_pools)))
+
     infos[task_id]={}
     Types[task_id]=Type
-    # 启动进程
-    # process.start()
-    # process.join()
+
     return 0
 def task_status(task_id):
     if(task_id in process_pools.keys()):
@@ -133,6 +123,8 @@ def receive_request66():
 def receive_request():
     # 获取来自客户端的 JSON 数据
     demo_config_path,task_id,Type= build_config(request.json)
+    if(demo_config_path=="no type"):
+        return jsonify({"Code": -1, "Msg": "no type"})
     print(request.json["Reporting"]["ReportUrlList"])
     stream_run_path=stream_path+"/samples/build"
     # 在这里处理接收到的数据
