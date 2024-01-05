@@ -20,6 +20,7 @@
 算法定义了TYPE映射保存在server中，目前仅适配了license_plate_recognition
 map_type={16:'license_plate_recognition'}
 
+使用前要将
 ## server使用方式
 由server进行接受前端json，并做任务下发和任务管理，包含线程池和端口管理。
 

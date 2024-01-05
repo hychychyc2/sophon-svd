@@ -27,6 +27,10 @@ def build_config(data):
     global port
     try:
         algorithm_name=map_type[data['Algorithm'][0]["Type"]]
+        # config_path=stream_path+'/samples/'+algorithm_name+'/config/'
+        # cmd=["cp","config/http_push.json",config_path]
+        # cp_process = subprocess.Popen(cmd, shell=False)    
+        # erro=cp_process.wait()
         algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
         demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
         return demo_config_path,data['TaskID'],data['Algorithm'][0]["Type"]
