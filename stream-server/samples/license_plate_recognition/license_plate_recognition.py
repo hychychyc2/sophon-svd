@@ -11,6 +11,8 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
     demo_config_path=config_path+algorithm_name+'_demo.json'
     http_config_path=config_path+'http_push.json'
     det_config_path=config_path+'yolov5_group.json'
+    graph_path=config_path+'engine_group.json'
+
     with open(demo_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
@@ -27,11 +29,21 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
     # print(data["InputSrc"]["StreamSrc"]["Address"])
-    json_data["configure"]["path"]="/flask_test/"+data['TaskID']
+    json_data["configure"]["path"]="/flask_test/"
     json_data["configure"]["port"]=port
 
     with open(http_config_path, 'w') as file:
         json.dump(json_data, file, indent=2)
+        
+    with open(graph_path, 'r') as file:
+    # 使用 json.load 将文件内容转换为字典
+        json_data = json.load(file)
+    # print(data["InputSrc"]["StreamSrc"]["Address"])
+    # print(json_data["report_port"])
+    json_data[0]["report_port"]=port    
+    with open(graph_path, 'w') as file:
+        json.dump(json_data, file, indent=2)
+        
     with open(det_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)

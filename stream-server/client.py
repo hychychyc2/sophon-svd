@@ -24,10 +24,19 @@ headers = {
     "Content-Type": "application/json"
 }
 
-@app.route('/flask_test/<string:task_id>', methods=['POST'])
-def build_result(task_id):
+@app.route('/flask_test/', methods=['POST'])
+def build_result():
     global Type,idx
     json_data = request.json
+    print(json_data["error"])
+    if not os.path.exists("results/"):
+            os.makedirs("results/")
+
+    if("error" in json_data.keys()):
+        with open("results/"+str(task_id)+'_error'+".json", 'w') as file:
+            json.dump(json_data, file, indent=2)
+        print(json_data["error"])
+        return jsonify({"message": "error", "response": -1})
     frame_id=int(json_data["mFrame"]["mFrameId"])
 
     # logic 

@@ -6,5 +6,5 @@ end_id=$2  # 例如，你的结束 id 是起始 id + 长度
 
 # 循环执行 Python3 脚本
 for ((id=start_id; id<=end_id; id++)); do
-    python3 post2.py $id 
+    python3 create.py $id 16
 done
