@@ -20,8 +20,16 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
     json_data["channels"]=[json_data["channels"][0]]
     json_data["channels"][0]["url"]=data["InputSrc"]["StreamSrc"]["Address"]
     json_data["channels"][0]["sample_interval"]=data["Algorithm"][0]["DetectInterval"]
-    json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
+    if(data["InputSrc"]["StreamSrc"]["Address"][:7]=="gb28181"):
+        json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:7].upper()
+    else:
+        json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
+
     json_data["channels"][0]["fps"]=25
+    json_data["http_report"]={}
+    json_data["http_report"]["ip"]="0.0.0.0"
+    json_data["http_report"]["port"]=port
+    json_data["http_report"]["path"]="/flask_test/"
 
     with open(demo_config_path, 'w') as file:
         json.dump(json_data, file, indent=2)
@@ -35,14 +43,6 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
     with open(http_config_path, 'w') as file:
         json.dump(json_data, file, indent=2)
         
-    with open(graph_path, 'r') as file:
-    # 使用 json.load 将文件内容转换为字典
-        json_data = json.load(file)
-    # print(data["InputSrc"]["StreamSrc"]["Address"])
-    # print(json_data["report_port"])
-    json_data[0]["report_port"]=port    
-    with open(graph_path, 'w') as file:
-        json.dump(json_data, file, indent=2)
         
     with open(det_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
