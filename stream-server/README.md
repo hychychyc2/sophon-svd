@@ -21,6 +21,7 @@
 map_type={16:'license_plate_recognition'}
 
 备注：使用前要将stream图加上http_push插件以将stream得结果上传到应用层，添加方式如下。
+
 1.找到stream图,把图中数据流output删除，找到如下部分并删除
 ```
 
@@ -51,6 +52,7 @@ map_type={16:'license_plate_recognition'}
                 }
             }
 ```
+
 3.添加之前数据流output与http_push,element得连接，如下
 ```
             {
