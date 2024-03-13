@@ -6,6 +6,7 @@ from io import BytesIO
 import base64
 import requests
 import argparse
+from datetime import datetime
 from config_algorithm import *
 algorithms=Algorithms()
 
@@ -28,12 +29,13 @@ headers = {
 def build_result():
     global Type,idx
     json_data = request.json
-    print(json_data["error"])
     if not os.path.exists("results/"):
             os.makedirs("results/")
 
     if("error" in json_data.keys()):
-        with open("results/"+str(task_id)+'_error'+".json", 'w') as file:
+        now = datetime.now()
+        error_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        with open("results/"+str(task_id)+"_"+str(error_time)+'_error'+".json", 'w') as file:
             json.dump(json_data, file, indent=2)
         print(json_data["error"])
         return jsonify({"message": "error", "response": -1})

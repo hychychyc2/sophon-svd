@@ -23,11 +23,53 @@ Types={}
 port=10001
 
 algorithms=Algorithms()
+ports_json={
+      "output": [
+                        {
+                            "port_id": 0,
+                            "is_sink": True,
+                            "is_src": False
+             }
+    ]
+}
 def build_config(data):
     global port
     try:
         algorithm_name=map_type[data['Algorithm'][0]["Type"]]
         config_path=stream_path+'/samples/'+algorithm_name+'/config/'
+        engine_group_path=stream_path+'/samples/'+algorithm_name+'/config/engine_group.json'
+        with open(engine_group_path, 'r') as file:
+        # 使用 json.load 将文件内容转换为字典
+            json_data = json.load(file)
+        max_element_id=0
+        http_push_found = False
+        for element in json_data[0]['elements']:
+            if element.get('element_config') == "../license_plate_recognition/config/http_push.json":
+                http_push_found = True
+        if http_push_found==False:
+            for element in json_data[0]['elements']:
+                max_element_id=max(int(element['element_id']),max_element_id)
+                if 'ports' in element:
+                    ports = element['ports']
+                    if 'output' in ports:
+                        # 如果存在 output，记录 element_id
+                        element_id=element['element_id']
+                        # 删除 ports 字段
+                        del element['ports']
+            http_push_element={}
+            http_push_element["element_id"]=max_element_id+1  
+            http_push_element["element_config"]="../"+algorithm_name+"/config/http_push.json"
+            http_push_element["ports"]=ports_json
+            json_data[0]['elements'].append(http_push_element)
+            http_push_connect={
+                "src_element_id": element_id,
+                "src_port": 0,
+                "dst_element_id": max_element_id+1,
+                "dst_port": 0
+            }
+            json_data[0]['connections'].append(http_push_connect)
+            with open(engine_group_path, 'w') as file:
+                json.dump(json_data, file, indent=2)
         cmd=["cp","config/http_push.json",config_path]
         cp_process = subprocess.Popen(cmd, shell=False)    
         erro=cp_process.wait()
