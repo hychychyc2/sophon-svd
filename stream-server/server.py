@@ -21,7 +21,7 @@ process_pools={}
 infos={}
 Types={}
 port=10001
-
+task_ports={}
 algorithms=Algorithms()
 ports_json={
       "output": [
@@ -34,8 +34,11 @@ ports_json={
 }
 def build_config(data):
     global port
-    try:
-        algorithm_name=map_type[data['Algorithm'][0]["Type"]]
+    # try:
+    demo_config_paths,TaskTypes=[],[]
+    task_ports[data['TaskID']]=[]
+    for i in range(len(data['Algorithm'])):
+        algorithm_name=map_type[data['Algorithm'][i]["Type"]]
         config_path=stream_path+'/samples/'+algorithm_name+'/config/'
         engine_group_path=stream_path+'/samples/'+algorithm_name+'/config/engine_group.json'
         with open(engine_group_path, 'r') as file:
@@ -43,8 +46,9 @@ def build_config(data):
             json_data = json.load(file)
         max_element_id=0
         http_push_found = False
+        http_string="../"+algorithm_name+"/config/http_push.json"
         for element in json_data[0]['elements']:
-            if element.get('element_config') == "../license_plate_recognition/config/http_push.json":
+            if element.get('element_config') == http_string:
                 http_push_found = True
         if http_push_found==False:
             for element in json_data[0]['elements']:
@@ -58,7 +62,7 @@ def build_config(data):
                         del element['ports']
             http_push_element={}
             http_push_element["element_id"]=max_element_id+1  
-            http_push_element["element_config"]="../"+algorithm_name+"/config/http_push.json"
+            http_push_element["element_config"]=http_string
             http_push_element["ports"]=ports_json
             json_data[0]['elements'].append(http_push_element)
             http_push_connect={
@@ -75,46 +79,47 @@ def build_config(data):
         erro=cp_process.wait()
         algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
         demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
-        return demo_config_path,data['TaskID'],data['Algorithm'][0]["Type"]
-    except:
-       return "no type",data['TaskID'],data['Algorithm'][0]["Type"]
-def build_client(task_id,Type,result_url):
-    global port
+        task_ports[data['TaskID']].append(port)
+        port+=1
+        demo_config_paths.append(demo_config_path)
+        TaskTypes.append(data['Algorithm'][i]["Type"])
+    return demo_config_paths,data['TaskID'],TaskTypes
+    # except:
+    #    return "no type",data['TaskID'],data['Algorithm'][0]["Type"]
+def build_client(task_id,Type,id,result_url):
     # import pdb; pdb.set_trace()
     
     # client_app.run(debug=True, host='0.0.0.0', port=8000)
-    cmd=["python3","client.py","--task_id="+str(task_id),"--type="+str(Type),"--port="+str(port),"--url="+str(result_url)]
-    port+=1
+    cmd=["python3","client.py","--task_id="+str(task_id),"--type="+str(Type),"--port="+str(task_ports[task_id][id]),"--id="+str(id),"--url="+str(result_url)]
     # cmd="python client.py --task_id="+str(task_id)+" --type="+str(Type)
 
     print(cmd)
-    log_path=str(task_id)+"_client.log"
+    log_path=str(task_id)+"_"+str(id)+"_client.log"
     with open(log_path, "w") as log_file:
         process = subprocess.Popen(cmd, shell=False, stdout=log_file, stderr=subprocess.STDOUT)
     return process
 
-def build_task(demo_config_path,task_id,Type,result_url):
-    if(task_status(task_id)["Status"]==1):
-        return "Task is already running."
+def build_task(demo_config_path,task_id,Type,id,result_url):
+   
     print(demo_config_path)
     print("Worker process started")
     time.sleep(3)
     stream_run_path=stream_path+"/samples/build"
-    client_process = build_client(task_id,Type,result_url)   
+    client_process = build_client(task_id,Type,id,result_url)   
 
     os.chdir(stream_run_path)
     cmd=[stream_run_path+"/main","--demo_config_path="+demo_config_path]
     print(cmd)
-    log_path=str(task_id)+"_stream.log"
+    log_path=str(task_id)+"_"+str(id)+"_stream.log"
     with open(log_path, "w") as log_file:
         stream_process = subprocess.Popen(cmd, shell=False, stdout=log_file, stderr=subprocess.STDOUT)    
     os.chdir(current_directory)
 
     
-    process_pools[task_id]=(stream_process,client_process)
+    process_pools[task_id].append((stream_process,client_process))
 
     infos[task_id]={}
-    Types[task_id]=Type
+    Types[task_id].append(Type)
 
     return 0
 def task_status(task_id):
@@ -122,19 +127,25 @@ def task_status(task_id):
         res={}
         res["TaskID"]=task_id
         # print(int(process_pools[task_id][0].poll()==None))
-        res["Status"]=int((process_pools[task_id][0].poll()==None))
+        status=0
+        for i in range(len(process_pools[task_id])):
+            status=status|int((process_pools[task_id][i][0].poll()==None))
+        res["Status"]=status
         return res
     return {"Status":"No task"}
 def task_list():
+    print(infos)
+    print(Types)
     ans=[]
     for key in infos.keys():
         ans.append(task_status(key))
     return ans
 def del_task(task_id):
     if(task_status(task_id)["Status"]==1):
-    # os.kill(process_pools[tasks_ids[task_id]].pid, signal.SIGINT)
-        process_pools[task_id][0].kill()
-        process_pools[task_id][1].kill()
+        # os.kill(process_pools[tasks_ids[task_id]].pid, signal.SIGINT)
+        for i in range(len(process_pools[task_id])):
+            process_pools[task_id][i][0].kill()
+            process_pools[task_id][i][1].kill()
         del process_pools[task_id]
         del infos[task_id]
         del Types[task_id]
@@ -168,18 +179,22 @@ def receive_request66():
 @app.route('/task/create', methods=['POST'])
 def receive_request():
     # 获取来自客户端的 JSON 数据
-    demo_config_path,task_id,Type= build_config(request.json)
-    if(demo_config_path=="no type"):
-        return jsonify({"Code": -1, "Msg": "no type"})
+    demo_config_paths,task_id,Types_= build_config(request.json)
+    # if(demo_config_path=="no type"):
+    #     return jsonify({"Code": -1, "Msg": "no type"})
     print(request.json["Reporting"]["ReportUrlList"])
     stream_run_path=stream_path+"/samples/build"
     # 在这里处理接收到的数据
-    ans=build_task(demo_config_path,task_id,Type,request.json["Reporting"]["ReportUrlList"])
-    if(ans==0):
-    # 返回响应给客户端
-        return jsonify({"Code": 0, "Msg": "success"})
-    else:
-        return jsonify({"Code": -1, "Msg": str(ans)})
+    process_pools[task_id]=[]
+    Types[task_id]=[]
+    if(task_status(task_id)["Status"]==1):
+        return jsonify({"Code": -1, "Msg": "task is running"})
+    for i in range(len(demo_config_paths)):
+        
+        build_task(demo_config_paths[i],task_id,Types_[i],i,request.json["Reporting"]["ReportUrlList"])
+
+    return jsonify({"Code": 0, "Msg": "success"})
+    
 def argsparser():
     parser = argparse.ArgumentParser(prog=__file__)
     parser.add_argument('--stream_path', type=str, default='/home/hyc/data/sophon-stream', help='path of stream')

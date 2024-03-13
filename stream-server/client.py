@@ -20,6 +20,7 @@ url_len=0
 result_list=[]
 task_id=0
 Type=0
+id=0
 # 定义请求头（如果有的话）
 headers = {
     "Content-Type": "application/json"
@@ -29,13 +30,15 @@ headers = {
 def build_result():
     global Type,idx
     json_data = request.json
+    # print(json_data["error"])
     if not os.path.exists("results/"):
             os.makedirs("results/")
 
     if("error" in json_data.keys()):
+        # 获取当前时间
         now = datetime.now()
         error_time = now.strftime("%Y-%m-%d %H:%M:%S")
-        with open("results/"+str(task_id)+"_"+str(error_time)+'_error'+".json", 'w') as file:
+        with open("results/"+str(task_id)+"_"+str(id)+"_"+str(error_time)+'_error'+".json", 'w') as file:
             json.dump(json_data, file, indent=2)
         print(json_data["error"])
         return jsonify({"message": "error", "response": -1})
@@ -62,7 +65,7 @@ def build_result():
         # print(response)
         if not os.path.exists("results/"):
             os.makedirs("results/")
-        with open("results/"+str(task_id)+'_'+str(frame_id)+".json", 'w') as file:
+        with open("results/"+str(task_id)+'_'+str(id)+'_'+str(frame_id)+".json", 'w') as file:
             json.dump([results], file, indent=2)
     # print(json_data)
     return jsonify({"message": "Request received and processed successfully", "response": 1})
@@ -73,12 +76,14 @@ def argsparser():
     parser.add_argument('--type', type=int, default=0, help='type of algorithm')
     parser.add_argument('--host', type=str, default="0.0.0.0", help='ip of host')
     parser.add_argument('--port', type=int, default=11100, help='port of host')
+    parser.add_argument('--id', type=int, default=0, help='port of host')
     parser.add_argument('--url', type=str, default="", help='report url')
     args = parser.parse_args()
     return args
 if __name__=="__main__":
     args = argsparser()
     task_id=args.task_id
+    id=args.id
     Type=args.type
     url="http://"+args.host+":"+str(args.port)
     result_url=args.url
