@@ -1,30 +1,48 @@
 #!/bin/bash
 
 # 检查是否传入了参数 \$1
-if [ -z $1 ]; then
-    echo "Usage: bash add_algorithm.sh  <alrorithm>"
+if [[ -z $1 && -z $2 ]]; then
+    echo "Usage: bash add_algorithm.sh  <algorithm> <type>"
     exit 1
 else
-    echo "Parameter 1 is set to $1."
+    echo "Parameter 1 is set to $1.Parameter 2 is set to $2."
 fi
 
 # 你的其余脚本可以放在这里
 
-alrorithm=$1
-if [ -d "$alrorithm" ]; then
+algorithm=$1
+type=$2
+if [ -d "$algorithm" ]; then
     echo "Directory $directory already exists."
 else
-    cp -r template $alrorithm
-    mv $alrorithm/template.py $alrorithm/$alrorithm.py
+    cp -r template $algorithm
+    mv $algorithm/template.py $algorithm/$algorithm.py
 fi
 
-# 定义要替换的旧字符串和新字符串
-old_string="template"
-new_string="$alrorithm"
 
 # 使用 sed 进行替换
-sed -i "s/$old_string/$new_string/g" "$alrorithm/$alrorithm.py"
-sed -i "s/$old_string/$new_string/g" "$alrorithm/config_logic.py"
+sed -i "s/template/$algorithm/g" "$algorithm/$algorithm.py"
+sed -i "s/template/$algorithm/g" "$algorithm/config_logic.py"
+
+
+
+sed -i "1 a from samples.${algorithm}.${algorithm} import *" ../config_algorithm.py
+sed -i "1 a from samples.${algorithm}.config_logic import *" ../config_algorithm.py
+
+# 更新Algorithms类
+sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_logic(self,json_data,up_list,rm_list):\n\ \ \ \ \ \ \ \ return ${algorithm}_logic(json_data,up_list,rm_list)" ../config_algorithm.py
+
+sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_trans_json(self,json_data,task_id,Type,up_list):\n\ \ \ \ \ \ \ \ return ${algorithm}_trans_json(json_data,task_id,Type,up_list)" ../config_algorithm.py
+
+sed -i "/class Algorithms:/a \ \ \ \ def ${algorithm}_build_config(self,algorithm_name,stream_path,data,port):\n\ \ \ \ \ \ \ \ return ${algorithm}_build_config(algorithm_name,stream_path,data,port)" ../config_algorithm.py
+
+
+# 更新map_type字典
+new_map_entry="$type:'${algorithm}'"
+sed -i "/map_type={/s/}/, $new_map_entry}/" ../config_algorithm.py
+
+echo "New algorithm '${algorithm}' added to Algorithms.py and file structure created."
+
 
 # 输出结果
-echo "Add $alrorithm success!"
+echo "Add $algorithm success!"
