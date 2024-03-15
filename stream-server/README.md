@@ -22,6 +22,8 @@ map_type={16:'license_plate_recognition'}
 
 备注：使用前要将stream图加上http_push插件以将stream得结果上传到应用层，添加方式如下。
 
+server.py会自动完成以下操作
+
 1.找到stream图,把图中数据流output删除，找到如下部分并删除
 ```
 
@@ -147,6 +149,10 @@ class Algorithms:
 
 在samples算法目录下填充对应算法的build_config,trans_json,logic函数
 
+提供了工具，可以使用samples/add_algorithm.sh进行添加
+```
+bash add_algorithm.sh name type
+```
 
 ### config_logic
 主要配置业务逻辑需要的参数设置。
