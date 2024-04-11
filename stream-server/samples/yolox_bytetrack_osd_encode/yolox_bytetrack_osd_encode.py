@@ -69,20 +69,24 @@ def yolox_bytetrack_osd_encode_build_config(algorithm_name,stream_path,data,port
     with open(filter_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
+    json_data["configure"]["rules"][0]["filters"][0]["areas"]=[]
     if(data["Algorithm"][i]["DetectInfos"]!=None):
         for detectinfoid in range(len(data["Algorithm"][i]["DetectInfos"])):
             area=[{"left":i['X'],"top":i["Y"]} for i in data["Algorithm"][i]["DetectInfos"][detectinfoid]["HotArea"]]
             json_data["configure"]["rules"][0]["filters"][0]["areas"].append(area)
-            line=[data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineStart"],data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineEnd"]]
+            head=data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineStart"]
+            end=data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineEnd"]
+            line=[{"left":head['X'],"top":head["Y"]},{"left":end['X'],"top":end["Y"]}]
             json_data["configure"]["rules"][0]["filters"][0]["areas"].append(line)
 
-            with open(filter_config_path, 'w') as file:
-                json.dump(json_data, file, indent=2)
+    
     else:
         if("roi"in json_data["configure"].keys()):
             del json_data["configure"]["roi"]
         with open(det_config_path, 'w') as file:
             json.dump(json_data, file, indent=2)
+    with open(filter_config_path, 'w') as file:
+        json.dump(json_data, file, indent=2)
     return demo_config_path
 
 def yolox_bytetrack_osd_encode_trans_json(json_data,task_id,Type,up_list):

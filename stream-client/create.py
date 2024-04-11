@@ -30,23 +30,23 @@ data = {
                 "MinDetect": 30,
                 "MaxDetect": 250
             },
-            "DetectInfos": None,
-            # "DetectInfos": [
-            #     {
-            #         "TripWire": {
-            #             "LineStart": {"X": 100, "Y": 200},
-            #             "LineEnd": {"X": 500, "Y": 300},
-            #             "DirectStart": {"X": 170, "Y": 260},
-            #             "DirectEnd": {"X": 170, "Y": 260}
-            #         },
-            #         "HotArea": [
-            #             {"X": 10, "Y": 10},
-            #             {"X": 191, "Y": 10},
-            #             {"X": 191, "Y": 107},
-            #             {"X": 10, "Y": 107}
-            #         ]
-            #     }
-            # ],
+            # "DetectInfos": None,
+            "DetectInfos": [
+                {
+                    "TripWire": {
+                        "LineStart": {"X": 1000, "Y": 0},
+                        "LineEnd": {"X": 1000, "Y": 1080},
+                        "DirectStart": {"X": 170, "Y": 260},
+                        "DirectEnd": {"X": 170, "Y": 260}
+                    },
+                    "HotArea": [
+                        {"X": 10, "Y": 10},
+                        {"X": 191, "Y": 10},
+                        {"X": 191, "Y": 107},
+                        {"X": 10, "Y": 107}
+                    ]
+                }
+            ],
             "Extend": {"key": "value"}
         }
     ],
