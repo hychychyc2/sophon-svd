@@ -1,7 +1,7 @@
 from samples.license_plate_recognition.config_logic import *
 import json
 
-def license_plate_recognition_build_config(algorithm_name,stream_path,data,port):
+def license_plate_recognition_build_config(algorithm_name,stream_path,data,port,i):
     config_path=stream_path+'/samples/'+algorithm_name+'/config/'
     # stream_run_path=stream_path+"/samples/build"
 
@@ -12,20 +12,23 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
     http_config_path=config_path+'http_push.json'
     det_config_path=config_path+'yolov5_group.json'
     graph_path=config_path+'engine_group.json'
-
+    filter_config_path=config_path+'filter.json'
     with open(demo_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
     # print(data["InputSrc"]["StreamSrc"]["Address"])
     json_data["channels"]=[json_data["channels"][0]]
-    json_data["channels"][0]["url"]=data["InputSrc"]["StreamSrc"]["Address"]
-    json_data["channels"][0]["sample_interval"]=data["Algorithm"][0]["DetectInterval"]
-    if(data["InputSrc"]["StreamSrc"]["Address"][:7]=="gb28181"):
-        json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:7].upper()
-    else:
-        json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
+    # json_data["channels"][0]["url"]=data["InputSrc"]["StreamSrc"]["Address"]
+    
+    json_data["channels"][0]["sample_interval"]=data["Algorithm"][i]["DetectInterval"]
+    # if(data["InputSrc"]["StreamSrc"]["Address"][:7]=="gb28181"):
+    #     json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:7].upper()
+    # else:
+    #     json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
 
     json_data["channels"][0]["fps"]=25
+    json_data["channels"][0]["loop_num"]=2100000
+
     json_data["http_report"]={}
     json_data["http_report"]["ip"]="0.0.0.0"
     json_data["http_report"]["port"]=port
@@ -44,17 +47,35 @@ def license_plate_recognition_build_config(algorithm_name,stream_path,data,port)
         json.dump(json_data, file, indent=2)
         
         
-    with open(det_config_path, 'r') as file:
+    # with open(det_config_path, 'r') as file:
+    # # 使用 json.load 将文件内容转换为字典
+    #     json_data = json.load(file)
+    # if(data["Algorithm"][0]["DetectInfos"]!=None):
+    #     sx=min([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     sy=min([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     tx=max([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     ty=max([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
+    #     json_data["configure"]["roi"]={"left":sx,"top":sy,"width":tx-sx,"height":ty-sy}
+    #     with open(det_config_path, 'w') as file:
+    #         json.dump(json_data, file, indent=2)
+    # else:
+    #     if("roi"in json_data["configure"].keys()):
+    #         del json_data["configure"]["roi"]
+    #     with open(det_config_path, 'w') as file:
+    #         json.dump(json_data, file, indent=2)
+    
+    with open(filter_config_path, 'r') as file:
     # 使用 json.load 将文件内容转换为字典
         json_data = json.load(file)
-    if(data["Algorithm"][0]["DetectInfos"]!=None):
-        sx=min([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        sy=min([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        tx=max([i['X'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        ty=max([i['Y'] for i in data["Algorithm"][0]["DetectInfos"][0]["HotArea"]])
-        json_data["configure"]["roi"]={"left":sx,"top":sy,"width":tx-sx,"height":ty-sy}
-        with open(det_config_path, 'w') as file:
-            json.dump(json_data, file, indent=2)
+    if(data["Algorithm"][i]["DetectInfos"]!=None):
+        for detectinfoid in range(len(data["Algorithm"][i]["DetectInfos"])):
+            area=[{"left":i['X'],"top":i["Y"]} for i in data["Algorithm"][i]["DetectInfos"][detectinfoid]["HotArea"]]
+            json_data["configure"]["rules"][0]["filters"][0]["areas"].append(area)
+            line=[data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineStart"],data["Algorithm"][i]["DetectInfos"][detectinfoid]["TripWire"]["LineEnd"]]
+            json_data["configure"]["rules"][0]["filters"][0]["areas"].append(line)
+
+            with open(filter_config_path, 'w') as file:
+                json.dump(json_data, file, indent=2)
     else:
         if("roi"in json_data["configure"].keys()):
             del json_data["configure"]["roi"]
@@ -105,7 +126,7 @@ def license_plate_recognition_trans_json(json_data,task_id,Type,up_list):
                 
 def license_plate_recognition_logic(json_data,up_list,rm_list):
     if("mSubObjectMetadatas" in json_data.keys()):
-            # print(json_data["mSubObjectMetadatas"][0]["mRecognizedObjectMetadatas"][0]["mLabelName"])
+        # print(json_data["mSubObjectMetadatas"][0]["mRecognizedObjectMetadatas"][0]["mLabelName"])
         names=[str(i["mRecognizedObjectMetadatas"][0]["mLabelName"]) for i in json_data["mSubObjectMetadatas"]]
     else:
         names=[]

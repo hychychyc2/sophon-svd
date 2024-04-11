@@ -33,7 +33,10 @@ def build_result():
     # print(json_data["error"])
     if not os.path.exists("results/"):
             os.makedirs("results/")
-
+    now = datetime.now()
+    error_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    # with open(str(error_time)+"a.txt", 'w') as file:
+    #     json.dump(json_data, file, indent=2)
     if("error" in json_data.keys()):
         # 获取当前时间
         now = datetime.now()

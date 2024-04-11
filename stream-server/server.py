@@ -47,10 +47,12 @@ def build_config(data):
         max_element_id=0
         http_push_found = False
         http_string="../"+algorithm_name+"/config/http_push.json"
+        filter_found = False
+        filter_string="../"+algorithm_name+"/config/filter.json"
         for element in json_data[0]['elements']:
-            if element.get('element_config') == http_string:
-                http_push_found = True
-        if http_push_found==False:
+            if element.get('element_config') == filter_string:
+                filter_found = True
+        if filter_found==False:
             for element in json_data[0]['elements']:
                 max_element_id=max(int(element['element_id']),max_element_id)
                 if 'ports' in element:
@@ -60,25 +62,45 @@ def build_config(data):
                         element_id=element['element_id']
                         # 删除 ports 字段
                         del element['ports']
-            http_push_element={}
-            http_push_element["element_id"]=max_element_id+1  
-            http_push_element["element_config"]=http_string
-            http_push_element["ports"]=ports_json
-            json_data[0]['elements'].append(http_push_element)
-            http_push_connect={
+            filter_element={}
+            filter_element["element_id"]=max_element_id+1  
+            filter_element["element_config"]=filter_string
+            json_data[0]['elements'].append(filter_element)
+            filter_connect={
                 "src_element_id": element_id,
                 "src_port": 0,
                 "dst_element_id": max_element_id+1,
                 "dst_port": 0
             }
+            json_data[0]['connections'].append(filter_connect)
+        for element in json_data[0]['elements']:
+            if element.get('element_config') == http_string:
+                http_push_found = True
+        if http_push_found==False:
+            http_push_element={}
+            http_push_element["element_id"]=max_element_id+2  
+            http_push_element["element_config"]=http_string
+            http_push_element["ports"]=ports_json
+            json_data[0]['elements'].append(http_push_element)
+            http_push_connect={
+                "src_element_id": max_element_id+1,
+                "src_port": 0,
+                "dst_element_id": max_element_id+2,
+                "dst_port": 0
+            }
             json_data[0]['connections'].append(http_push_connect)
-            with open(engine_group_path, 'w') as file:
-                json.dump(json_data, file, indent=2)
+
+        
+        with open(engine_group_path, 'w') as file:
+            json.dump(json_data, file, indent=2)
         cmd=["cp","config/http_push.json",config_path]
         cp_process = subprocess.Popen(cmd, shell=False)    
         erro=cp_process.wait()
+        cmd=["cp","config/filter.json",config_path]
+        cp_process = subprocess.Popen(cmd, shell=False)    
+        erro=cp_process.wait()
         algorithm_build_config=getattr(algorithms,algorithm_name+'_build_config')
-        demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port)
+        demo_config_path=algorithm_build_config(algorithm_name,stream_path,data,port,i)
         task_ports[data['TaskID']].append(port)
         port+=1
         demo_config_paths.append(demo_config_path)

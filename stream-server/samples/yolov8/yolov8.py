@@ -87,7 +87,7 @@ yolov8_dict = {
     79: 'toothbrush',
 }
 
-def yolov8_build_config(algorithm_name,stream_path,data,port):
+def yolov8_build_config(algorithm_name,stream_path,data,port,i):
     config_path=stream_path+'/samples/'+algorithm_name+'/config/'
    
     demo_config_path=config_path+algorithm_name+'_demo.json'

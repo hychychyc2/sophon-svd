@@ -1,7 +1,7 @@
-from samples.template.config_logic import *
+from samples.blank.config_logic import *
 import json
 
-def template_build_config(algorithm_name,stream_path,data,port,i):
+def blank_build_config(algorithm_name,stream_path,data,port,i):
     config_path=stream_path+'/samples/'+algorithm_name+'/config/'
     # stream_run_path=stream_path+"/samples/build"
 
@@ -83,7 +83,7 @@ def template_build_config(algorithm_name,stream_path,data,port,i):
             json.dump(json_data, file, indent=2)
     return demo_config_path
 
-def template_trans_json(json_data,task_id,Type,up_list):
+def blank_trans_json(json_data,task_id,Type,up_list):
     results={}
     frame_id=int(json_data["mFrame"]["mFrameId"])
     results["FrameIndex"]=frame_id    
@@ -114,28 +114,28 @@ def template_trans_json(json_data,task_id,Type,up_list):
                 results["AnalyzeEvents"].append(result)
     return results
                 
-def template_logic(json_data,up_list,rm_list):
+def blank_logic(json_data,up_list,rm_list):
     if("mSubObjectMetadatas" in json_data.keys()):
         names=[str(i["mRecognizedObjectMetadatas"][0]["mLabelName"]) for i in json_data["mSubObjectMetadatas"]]
     else:
         names=[]
     for name in names:
-        if name in template_infos.keys():
-            template_infos[name]["in"]+=1
-            if template_infos[name]["in"]==template_in_thresh:
+        if name in blank_infos.keys():
+            blank_infos[name]["in"]+=1
+            if blank_infos[name]["in"]==blank_in_thresh:
                 up_list.append(name)      
         else :
-            template_infos[name]={}
-            template_infos[name]["in"]=1
-            if template_infos[name]["in"]==template_in_thresh:
+            blank_infos[name]={}
+            blank_infos[name]["in"]=1
+            if blank_infos[name]["in"]==blank_in_thresh:
                 up_list.append(name)
-    for key in template_infos.keys():
+    for key in blank_infos.keys():
         if key not in names:
-            if "out" in template_infos[key].keys():
-                template_infos[key]["out"]+=1
-                if template_infos[key]["out"]>=template_out_thresh:
+            if "out" in blank_infos[key].keys():
+                blank_infos[key]["out"]+=1
+                if blank_infos[key]["out"]>=blank_out_thresh:
                     rm_list.append(key)          
             else:
-                template_infos[key]["out"]=1
+                blank_infos[key]["out"]=1
     for key in rm_list:
-        del template_infos[key]
+        del blank_infos[key]
