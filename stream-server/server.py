@@ -108,11 +108,11 @@ def build_config(data):
     return demo_config_paths,data['TaskID'],TaskTypes
     # except:
     #    return "no type",data['TaskID'],data['Algorithm'][0]["Type"]
-def build_client(task_id,Type,id,result_url):
+def build_client(task_id,Type,id,src_id,result_url):
     # import pdb; pdb.set_trace()
     
     # client_app.run(debug=True, host='0.0.0.0', port=8000)
-    cmd=["python3","client.py","--task_id="+str(task_id),"--type="+str(Type),"--port="+str(task_ports[task_id][id]),"--id="+str(id),"--url="+str(result_url)]
+    cmd=["python3","client.py","--task_id="+str(task_id),"--type="+str(Type),"--port="+str(task_ports[task_id][id]),"--id="+str(id),"--src_id="+str(src_id),"--url="+str(result_url)]
     # cmd="python client.py --task_id="+str(task_id)+" --type="+str(Type)
 
     print(cmd)
@@ -121,13 +121,13 @@ def build_client(task_id,Type,id,result_url):
         process = subprocess.Popen(cmd, shell=False, stdout=log_file, stderr=subprocess.STDOUT)
     return process
 
-def build_task(demo_config_path,task_id,Type,id,result_url):
+def build_task(demo_config_path,task_id,Type,id,src_id,result_url):
    
     print(demo_config_path)
     print("Worker process started")
     time.sleep(3)
     stream_run_path=stream_path+"/samples/build"
-    client_process = build_client(task_id,Type,id,result_url)   
+    client_process = build_client(task_id,Type,id,src_id,result_url)   
 
     os.chdir(stream_run_path)
     cmd=[stream_run_path+"/main","--demo_config_path="+demo_config_path]
@@ -213,7 +213,7 @@ def receive_request():
         return jsonify({"Code": -1, "Msg": "task is running"})
     for i in range(len(demo_config_paths)):
         
-        build_task(demo_config_paths[i],task_id,Types_[i],i,request.json["Reporting"]["ReportUrlList"])
+        build_task(demo_config_paths[i],task_id,Types_[i],i,request.json["InputSrc"]["SrcID"],request.json["Reporting"]["ReportUrlList"])
 
     return jsonify({"Code": 0, "Msg": "success"})
     

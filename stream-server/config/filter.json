@@ -5,7 +5,7 @@
                 "channel_id": 0,
                 "filters": [
                     {
-                        "alert_first_frames": 0,
+                        "alert_first_frame": 0,
                         "alert_frame_skip_nums": 10000,
                         "areas": [
                             [

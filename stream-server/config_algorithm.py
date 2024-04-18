@@ -1,4 +1,8 @@
 
+from samples.area_intrusion.config_logic import *
+from samples.area_intrusion.area_intrusion import *
+from samples.tripwire.config_logic import *
+from samples.tripwire.tripwire import *
 from samples.blank.config_logic import *
 from samples.blank.blank import *
 from samples.yolox_bytetrack_osd_encode.config_logic import *
@@ -14,10 +18,22 @@ from samples.yolov8.config_logic import *
 from samples.retinaface.retinaface import *
 from samples.retinaface.config_logic import *
 
-map_type={16:'license_plate_recognition',15:'yolov5_fastpose_posec3d',14:'yolov5',13:'yolov8',12:'retinaface', 88:'yolox_bytetrack_osd_encode', 10000:'blank'}
+map_type={16:'license_plate_recognition',15:'yolov5_fastpose_posec3d',14:'yolov5',13:'yolov8',12:'retinaface', 88:'yolox_bytetrack_osd_encode', 10000:'blank', 1:'tripwire', 2:'area_intrusion'}
 
 
 class Algorithms:
+    def area_intrusion_build_config(self,algorithm_name,stream_path,data,port,i):
+        return area_intrusion_build_config(algorithm_name,stream_path,data,port,i)
+    def area_intrusion_trans_json(self,json_data,task_id,Type,up_list):
+        return area_intrusion_trans_json(json_data,task_id,Type,up_list)
+    def area_intrusion_logic(self,json_data,up_list,rm_list):
+        return area_intrusion_logic(json_data,up_list,rm_list)
+    def tripwire_build_config(self,algorithm_name,stream_path,data,port,i):
+        return tripwire_build_config(algorithm_name,stream_path,data,port,i)
+    def tripwire_trans_json(self,json_data,task_id,Type,up_list):
+        return tripwire_trans_json(json_data,task_id,Type,up_list)
+    def tripwire_logic(self,json_data,up_list,rm_list):
+        return tripwire_logic(json_data,up_list,rm_list)
     def blank_build_config(self,algorithm_name,stream_path,data,port,i):
         return blank_build_config(algorithm_name,stream_path,data,port,i)
     def blank_trans_json(self,json_data,task_id,Type,up_list):

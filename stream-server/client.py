@@ -21,6 +21,7 @@ result_list=[]
 task_id=0
 Type=0
 id=0
+src_id=""
 # 定义请求头（如果有的话）
 headers = {
     "Content-Type": "application/json"
@@ -81,6 +82,8 @@ def argsparser():
     parser.add_argument('--port', type=int, default=11100, help='port of host')
     parser.add_argument('--id', type=int, default=0, help='port of host')
     parser.add_argument('--url', type=str, default="", help='report url')
+    parser.add_argument('--src_id', type=str, default="", help='src_id')
+
     args = parser.parse_args()
     return args
 if __name__=="__main__":
@@ -90,6 +93,7 @@ if __name__=="__main__":
     Type=args.type
     url="http://"+args.host+":"+str(args.port)
     result_url=args.url
+    src_id=args.src_id
     result_list=eval(result_url)
     url_len=len(result_list)
     app.run(debug=False, host='0.0.0.0', port=args.port)
