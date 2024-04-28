@@ -32,7 +32,7 @@ def tripwire_build_config(algorithm_name,stream_path,data,port,i):
     else:
         json_data["channels"][0]["source_type"]=data["InputSrc"]["StreamSrc"]["Address"][:4].upper()
 
-    json_data["channels"][0]["fps"]=-1
+    json_data["channels"][0]["fps"]=25
     json_data["channels"][0]["loop_num"]=2100000
 
     json_data["http_report"]={}
@@ -82,6 +82,8 @@ def tripwire_build_config(algorithm_name,stream_path,data,port,i):
         json_data = json.load(file)
     json_data["configure"]["rules"][0]["filters"][0]["areas"]=[]
     json_data["configure"]["rules"][0]["filters"][0]["type"]=1
+    json_data["configure"]["rules"][0]["filters"][0]["alert_first_frame"]=data["Algorithm"][i]["TrackInterval"]
+    json_data["configure"]["rules"][0]["filters"][0]["alert_frame_skip_nums"]=data["Algorithm"][i]["AlarmInterval"]
     if(data["Algorithm"][i]["DetectInfos"]!=None):
         for detectinfoid in range(len(data["Algorithm"][i]["DetectInfos"])):
             # area=[{"left":i['X'],"top":i["Y"]} for i in data["Algorithm"][i]["DetectInfos"][detectinfoid]["HotArea"]]

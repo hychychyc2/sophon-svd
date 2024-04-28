@@ -61,16 +61,16 @@ def build_result():
     algorithm_trans_json=getattr(algorithms,algorithm_name+'_trans_json')
     results=algorithm_trans_json(json_data,task_id,Type,up_list)
     print(up_list)
-
+    results["SrcID"]=src_id
     if(len(up_list)):
-        # response = requests.post(result_list[idx%url_len], json=[results], headers=headers)
+        response = requests.post(result_list[idx%url_len], json=[results], headers=headers)
         idx+=1
         idx%=url_len
         # print(response)
-        if not os.path.exists("results/"):
-            os.makedirs("results/")
-        with open("results/"+str(task_id)+'_'+str(id)+'_'+str(frame_id)+".json", 'w') as file:
-            json.dump([results], file, indent=2)
+        # if not os.path.exists("results/"):
+        #     os.makedirs("results/")
+        # with open("results/"+str(task_id)+'_'+str(id)+'_'+str(frame_id)+".json", 'w') as file:
+        #     json.dump([results], file, indent=2)
     # print(json_data)
     return jsonify({"message": "Request received and processed successfully", "response": 1})
 

@@ -125,7 +125,7 @@ def build_task(demo_config_path,task_id,Type,id,src_id,result_url):
    
     print(demo_config_path)
     print("Worker process started")
-    time.sleep(3)
+    #time.sleep(3)
     stream_run_path=stream_path+"/samples/build"
     client_process = build_client(task_id,Type,id,src_id,result_url)   
 
